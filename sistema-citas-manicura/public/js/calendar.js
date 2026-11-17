@@ -1,9 +1,74 @@
-// Motor de almacenamiento local, horas personalizadas, reagendado y copias de seguridad
-const Storage = {
-    // 1. Autenticación (PIN por defecto: 1234)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// Configuración real de tu proyecto citas-nails-prod
+const firebaseConfig = {
+    apiKey: "AIzaSyBfhdrYi7Kvc6u--PP1-A4VGK8zmD4E_YU",
+    authDomain: "citas-nails-prod.firebaseapp.com",
+    projectId: "citas-nails-prod",
+    storageBucket: "citas-nails-prod.firebasestorage.app",
+    messagingSenderId: "705585538747",
+    appId: "1:705585538747:web:78da577bf4e95f5217ab9e"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Estado sincronizado en tiempo real entre todos los dispositivos
+const AppState = {
+    horasBase: ['09:00 AM', '11:00 AM', '02:00 PM', '04:00 PM'],
+    disponibilidad: {},
+    citas: [],
+    pin: '1234',
+    listeners: []
+};
+
+export function onDataReady(callback) {
+    AppState.listeners.push(callback);
+}
+
+function notifyListeners() {
+    AppState.listeners.forEach(cb => cb());
+}
+
+function initRealtimeSync() {
+    // 1. Escuchar horas base y PIN
+    onSnapshot(doc(db, "config", "general"), (snap) => {
+        if (snap.exists()) {
+            const data = snap.data();
+            if (data.horasBase) AppState.horasBase = data.horasBase;
+            if (data.pin) AppState.pin = data.pin;
+        }
+        notifyListeners();
+    });
+
+    // 2. Escuchar disponibilidad de días
+    onSnapshot(collection(db, "disponibilidad"), (snapshot) => {
+        const disp = {};
+        snapshot.forEach(docSnap => {
+            disp[docSnap.id] = docSnap.data().horas || [];
+        });
+        AppState.disponibilidad = disp;
+        notifyListeners();
+    });
+
+    // 3. Escuchar citas en vivo
+    onSnapshot(collection(db, "citas"), (snapshot) => {
+        const lista = [];
+        snapshot.forEach(docSnap => {
+            lista.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        lista.sort((a, b) => `${a.fecha} ${a.hora}`.localeCompare(`${b.fecha} ${b.hora}`));
+        AppState.citas = lista;
+        notifyListeners();
+    });
+}
+
+initRealtimeSync();
+
+export const Storage = {
     checkPin(inputPin) {
-        const savedPin = localStorage.getItem('manicura_pin') || '1234';
-        if (inputPin === savedPin) {
+        if (inputPin === AppState.pin) {
             sessionStorage.setItem('manicura_auth', 'true');
             return true;
         }
@@ -17,108 +82,101 @@ const Storage = {
         window.location.reload();
     },
 
-    // 2. Plantilla de Horas Base (Personalizable por la dueña)
     getCustomBaseHours() {
-        const defaultHours = ['09:00 AM', '11:00 AM', '02:00 PM', '04:00 PM'];
-        return JSON.parse(localStorage.getItem('manicura_horas_base') || JSON.stringify(defaultHours));
+        return AppState.horasBase;
     },
-    saveCustomBaseHours(hoursArray) {
-        localStorage.setItem('manicura_horas_base', JSON.stringify(hoursArray));
+    async saveCustomBaseHours(hoursArray) {
+        AppState.horasBase = hoursArray;
+        await setDoc(doc(db, "config", "general"), { horasBase: hoursArray, pin: AppState.pin }, { merge: true });
     },
 
-    // 3. Disponibilidad por Fecha (YYYY-MM-DD)
     getHours(dateStr) {
-        const data = JSON.parse(localStorage.getItem('manicura_disponibilidad') || '{}');
-        return data[dateStr] || [];
+        return AppState.disponibilidad[dateStr] || [];
     },
-    saveHours(dateStr, hoursArray) {
-        const data = JSON.parse(localStorage.getItem('manicura_disponibilidad') || '{}');
-        data[dateStr] = hoursArray;
-        localStorage.setItem('manicura_disponibilidad', JSON.stringify(data));
+    async saveHours(dateStr, hoursArray) {
+        AppState.disponibilidad[dateStr] = hoursArray;
+        await setDoc(doc(db, "disponibilidad", dateStr), { horas: hoursArray });
     },
 
-    // 4. Gestión de Citas y Reagendamiento
     getAppointments() {
-        return JSON.parse(localStorage.getItem('manicura_citas') || '[]');
+        return AppState.citas;
     },
-    saveAppointment(cita) {
-        const citas = this.getAppointments();
-        citas.push({ 
-            ...cita, 
-            id: Date.now(), 
+    async saveAppointment(cita) {
+        const docRef = doc(db, "disponibilidad", cita.fecha);
+        const snap = await getDoc(docRef);
+        const horasActuales = snap.exists() ? (snap.data().horas || []) : [];
+
+        if (!horasActuales.includes(cita.hora)) {
+            throw new Error("HORA_OCUPADA");
+        }
+
+        await addDoc(collection(db, "citas"), {
+            ...cita,
             estado: 'pendiente',
-            reagendada: false
+            reagendada: false,
+            creadoEn: new Date().toISOString()
         });
-        localStorage.setItem('manicura_citas', JSON.stringify(citas));
 
-        // Ocupar la hora seleccionada
-        const available = this.getHours(cita.fecha).filter(h => h !== cita.hora);
-        this.saveHours(cita.fecha, available);
+        const nuevasHoras = horasActuales.filter(h => h !== cita.hora);
+        await setDoc(docRef, { horas: nuevasHoras });
     },
-    rescheduleAppointment(id, nuevaFecha, nuevaHora, liberarHoraAnterior = true) {
-        const citas = this.getAppointments();
-        const index = citas.findIndex(c => c.id === id);
-        if (index === -1) return false;
+    async rescheduleAppointment(id, nuevaFecha, nuevaHora, liberarHoraAnterior = true) {
+        const citaAntigua = AppState.citas.find(c => c.id === id);
+        if (!citaAntigua) return false;
 
-        const citaAntigua = citas[index];
-
-        // 1. Devolver la hora vieja a la disponibilidad si la dueña lo desea
         if (liberarHoraAnterior) {
-            const horasViejaFecha = this.getHours(citaAntigua.fecha);
-            if (!horasViejaFecha.includes(citaAntigua.hora)) {
-                horasViejaFecha.push(citaAntigua.hora);
-                this.saveHours(citaAntigua.fecha, horasViejaFecha);
+            const horasVieja = [...this.getHours(citaAntigua.fecha)];
+            if (!horasVieja.includes(citaAntigua.hora)) {
+                horasVieja.push(citaAntigua.hora);
+                await this.saveHours(citaAntigua.fecha, horasVieja);
             }
         }
 
-        // 2. Ocupar la hora nueva si estaba en la lista de disponibles
-        const horasNuevaFecha = this.getHours(nuevaFecha).filter(h => h !== nuevaHora);
-        this.saveHours(nuevaFecha, horasNuevaFecha);
+        const horasNueva = this.getHours(nuevaFecha).filter(h => h !== nuevaHora);
+        await this.saveHours(nuevaFecha, horasNueva);
 
-        // 3. Actualizar registro en el historial
-        citas[index] = {
-            ...citaAntigua,
+        await updateDoc(doc(db, "citas", id), {
             fechaAnterior: citaAntigua.fecha,
             horaAnterior: citaAntigua.hora,
             fecha: nuevaFecha,
             hora: nuevaHora,
             reagendada: true,
             estado: 'pendiente'
-        };
-
-        localStorage.setItem('manicura_citas', JSON.stringify(citas));
+        });
         return true;
     },
-    updateAppointmentStatus(id, nuevoEstado) {
-        const citas = this.getAppointments().map(c => c.id === id ? { ...c, estado: nuevoEstado } : c);
-        localStorage.setItem('manicura_citas', JSON.stringify(citas));
+    async updateAppointmentStatus(id, nuevoEstado) {
+        await updateDoc(doc(db, "citas", id), { estado: nuevoEstado });
     },
-    deleteAppointment(id) {
-        const citas = this.getAppointments().filter(c => c.id !== id);
-        localStorage.setItem('manicura_citas', JSON.stringify(citas));
+    async deleteAppointment(id) {
+        await deleteDoc(doc(db, "citas", id));
     },
 
-    // 5. Estadísticas
     getStats() {
         const citas = this.getAppointments();
+        const y = new Date().getFullYear();
+        const m = String(new Date().getMonth() + 1).padStart(2, '0');
+        const d = String(new Date().getDate()).padStart(2, '0');
+        const hoyStr = `${y}-${m}-${d}`;
+
         const activas = citas.filter(c => c.estado !== 'cancelada');
         const completadas = citas.filter(c => c.estado === 'completada');
         const pendientes = citas.filter(c => c.estado === 'pendiente');
+        const citasHoy = activas.filter(c => c.fecha === hoyStr);
 
         return {
+            hoy: citasHoy.length,
             pendientes: pendientes.length,
             completadas: completadas.length,
-            ingresosReales: completadas.reduce((sum, c) => sum + Number(c.precio || 0), 0),
-            ingresosEstimados: activas.reduce((sum, c) => sum + Number(c.precio || 0), 0)
+            totalCitas: activas.length
         };
     },
 
-    // 6. Respaldo Físico (Para no perder datos si se limpia el navegador)
     exportBackup() {
         const backup = {
-            horas_base: this.getCustomBaseHours(),
-            disponibilidad: JSON.parse(localStorage.getItem('manicura_disponibilidad') || '{}'),
-            citas: this.getAppointments(),
+            horas_base: AppState.horasBase,
+            disponibilidad: AppState.disponibilidad,
+            citas: AppState.citas,
             fecha_respaldo: new Date().toISOString()
         };
         const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -127,22 +185,10 @@ const Storage = {
         a.href = url;
         a.download = `respaldo-agenda-nails-${new Date().toISOString().split('T')[0]}.json`;
         a.click();
-    },
-    importBackup(jsonString) {
-        try {
-            const data = JSON.parse(jsonString);
-            if (data.horas_base) localStorage.setItem('manicura_horas_base', JSON.stringify(data.horas_base));
-            if (data.disponibilidad) localStorage.setItem('manicura_disponibilidad', JSON.stringify(data.disponibilidad));
-            if (data.citas) localStorage.setItem('manicura_citas', JSON.stringify(data.citas));
-            return true;
-        } catch (e) {
-            return false;
-        }
     }
 };
 
-// Utilidad para convertir hora militar (input type="time") a formato 12h (Ej. 14:30 -> 02:30 PM)
-function formatTime12h(time24) {
+export function formatTime12h(time24) {
     if (!time24) return '';
     const [h, m] = time24.split(':');
     let hours = parseInt(h, 10);
@@ -151,8 +197,7 @@ function formatTime12h(time24) {
     return `${String(hours).padStart(2, '0')}:${m} ${suffix}`;
 }
 
-// Calendario Visual con paleta cálida (Cero blanco puro, tonos Arena/Taupe)
-class CustomCalendar {
+export class CustomCalendar {
     constructor(containerId, onSelectDate) {
         this.container = document.getElementById(containerId);
         this.onSelectDate = onSelectDate;
@@ -190,9 +235,7 @@ class CustomCalendar {
                 <div class="grid grid-cols-7 gap-1.5 text-sm">
         `;
 
-        for (let i = 0; i < firstDay; i++) {
-            html += `<div></div>`;
-        }
+        for (let i = 0; i < firstDay; i++) html += `<div></div>`;
 
         for (let day = 1; day <= daysInMonth; day++) {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;

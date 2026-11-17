@@ -13,9 +13,7 @@
     <!-- PANTALLA DE PIN (1234) -->
     <div id="login-overlay" class="fixed inset-0 bg-[#E3DCD3] z-50 flex items-center justify-center p-4">
         <div class="bg-[#F4F0EA] border border-stone-300 rounded-xl p-8 max-w-sm w-full shadow-sm text-center">
-            <div class="w-12 h-12 bg-[#8C3B32] text-[#F4F0EA] rounded-lg flex items-center justify-center mx-auto mb-4 font-semibold text-lg">
-                ES
-            </div>
+            <div class="w-12 h-12 bg-[#8C3B32] text-[#F4F0EA] rounded-lg flex items-center justify-center mx-auto mb-4 font-semibold text-lg">ES</div>
             <h1 class="text-lg font-semibold text-stone-900 mb-1">Panel de Dueña</h1>
             <p class="text-xs text-stone-600 mb-6">Ingresa tu PIN de seguridad (Prueba: 1234)</p>
             
@@ -36,7 +34,7 @@
         <div class="bg-[#F4F0EA] border border-stone-300 rounded-xl p-6 max-w-md w-full shadow-lg">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-base font-semibold text-stone-900">Reagendar Cita</h3>
-                <button type="button" onclick="closeRescheduleModal()" class="text-stone-500 hover:text-stone-900">✕</button>
+                <button type="button" id="close-modal-btn" class="text-stone-500 hover:text-stone-900">✕</button>
             </div>
             <p id="reschedule-client-info" class="text-xs text-stone-600 mb-4 bg-[#E6DFD5] p-3 rounded-lg border border-stone-300"></p>
             
@@ -55,7 +53,7 @@
                     Liberar la hora anterior para que otra clienta pueda tomarla
                 </label>
                 <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="closeRescheduleModal()" class="flex-1 py-2.5 border border-stone-300 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-200">Cancelar</button>
+                    <button type="button" id="cancel-modal-btn" class="flex-1 py-2.5 border border-stone-300 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-200">Cancelar</button>
                     <button type="submit" class="flex-1 py-2.5 bg-[#8C3B32] text-white rounded-lg text-xs font-medium hover:bg-[#722F28]">Guardar Cambio</button>
                 </div>
             </form>
@@ -68,16 +66,12 @@
             <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
                 <div class="flex items-center gap-2.5">
                     <span class="w-3 h-3 rounded-full bg-[#8C3B32]"></span>
-                    <span class="font-semibold text-stone-900">Control de Agenda • Uñas, Pies y Extensiones</span>
+                    <span class="font-semibold text-stone-900">Control de Agenda • En la Nube</span>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
-                    <button onclick="Storage.exportBackup()" class="text-xs bg-[#F4F0EA] border border-stone-300 hover:bg-stone-200 text-stone-800 px-3 py-1.5 rounded-md font-medium">
-                        ⬇ Guardar Respaldo
+                    <button id="export-btn" class="text-xs bg-[#F4F0EA] border border-stone-300 hover:bg-stone-200 text-stone-800 px-3 py-1.5 rounded-md font-medium">
+                        ⬇ Descargar Copia
                     </button>
-                    <label class="text-xs bg-[#F4F0EA] border border-stone-300 hover:bg-stone-200 text-stone-800 px-3 py-1.5 rounded-md font-medium cursor-pointer">
-                        ⬆ Restaurar
-                        <input type="file" id="import-backup" accept=".json" class="hidden">
-                    </label>
                     <a href="index.html" class="text-xs font-semibold text-[#8C3B32] hover:underline px-2">Vista Clienta &rarr;</a>
                     <button id="logout-btn" class="text-xs text-stone-600 hover:text-stone-900 underline">Salir</button>
                 </div>
@@ -85,13 +79,11 @@
         </nav>
 
         <main class="max-w-6xl mx-auto px-4 py-6 space-y-6">
-            
-            <!-- ESTADÍSTICAS DE CITAS (Sin precios) -->
             <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-[#F4F0EA] border border-stone-300 rounded-xl p-4">
                     <span class="text-xs font-medium text-stone-600">Citas para Hoy</span>
                     <p class="text-2xl font-semibold text-[#8C3B32] mt-1" id="stat-today">0</p>
-                    <span class="text-xs text-stone-500 mt-0.5 block">Agendadas en el día actual</span>
+                    <span class="text-xs text-stone-500 mt-0.5 block">Agendadas hoy</span>
                 </div>
                 <div class="bg-[#F4F0EA] border border-stone-300 rounded-xl p-4">
                     <span class="text-xs font-medium text-stone-600">Por Atender</span>
@@ -106,13 +98,11 @@
                 <div class="bg-[#F4F0EA] border border-stone-300 rounded-xl p-4">
                     <span class="text-xs font-medium text-stone-600">Total en Historial</span>
                     <p class="text-2xl font-semibold text-stone-900 mt-1" id="stat-total">0</p>
-                    <span class="text-xs text-stone-500 mt-0.5 block">Registro acumulado</span>
+                    <span class="text-xs text-stone-500 mt-0.5 block">Guardado en la nube</span>
                 </div>
             </section>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
-                <!-- COLUMNA IZQUIERDA: CALENDARIO Y HORAS PERSONALIZABLES -->
                 <div class="lg:col-span-5 bg-[#F4F0EA] border border-stone-300 rounded-xl p-5 h-fit space-y-5">
                     <div>
                         <h2 class="text-base font-semibold text-stone-900">1. Selecciona una Fecha</h2>
@@ -127,7 +117,6 @@
                             </h3>
                             <button type="button" id="select-all-hours" class="text-xs text-[#8C3B32] font-medium hover:underline">Activar todas</button>
                         </div>
-                        <p class="text-xs text-stone-600 mb-3">Enciende las horas en que trabajarás o crea una nueva:</p>
 
                         <div class="flex gap-2 mb-4">
                             <input type="time" id="custom-hour-input" class="flex-1 px-3 py-2 bg-[#E6DFD5] border border-stone-300 rounded-lg text-xs text-stone-900 focus:outline-none focus:border-[#8C3B32]">
@@ -144,12 +133,11 @@
                     </div>
                 </div>
 
-                <!-- COLUMNA DERECHA: AGENDA DE CITAS -->
                 <div class="lg:col-span-7 bg-[#F4F0EA] border border-stone-300 rounded-xl p-5">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stone-300 mb-4">
                         <div>
                             <h2 class="text-base font-semibold text-stone-900">Agenda de Clientas</h2>
-                            <p class="text-xs text-stone-600">Reagenda turnos, marca completadas o confirma por WhatsApp.</p>
+                            <p class="text-xs text-stone-600">Se actualiza en tiempo real cuando alguien reserva.</p>
                         </div>
                         <div class="flex bg-[#E3DCD3] p-1 rounded-lg text-xs font-medium">
                             <button type="button" data-filter="all" class="filter-btn bg-[#F4F0EA] text-stone-900 shadow-sm px-3 py-1.5 rounded-md">Todas</button>
@@ -160,22 +148,26 @@
 
                     <div id="appointments-list" class="space-y-3"></div>
                 </div>
-
             </div>
         </main>
     </div>
 
-    <script src="js/calendar.js"></script>
-    <script>
+    <script type="module">
+        import { Storage, CustomCalendar, formatTime12h, onDataReady } from './js/calendar.js';
+
         let currentSelectedDate = '';
         let currentFilter = 'all';
         let adminCal;
+        let initialized = false;
 
         function checkAccess() {
             if (Storage.isAuthenticated()) {
                 document.getElementById('login-overlay').classList.add('hidden');
                 document.getElementById('admin-content').classList.remove('hidden');
-                initAdmin();
+                if (!initialized) {
+                    initialized = true;
+                    initAdmin();
+                }
             }
         }
 
@@ -189,38 +181,42 @@
         });
 
         document.getElementById('logout-btn').addEventListener('click', () => Storage.logout());
+        document.getElementById('export-btn').addEventListener('click', () => Storage.exportBackup());
 
         function initAdmin() {
             adminCal = new CustomCalendar('admin-calendar', onDateChange);
             onDateChange(adminCal.selectedDate);
             updateDashboard();
 
-            document.getElementById('add-custom-hour-btn').addEventListener('click', () => {
+            onDataReady(() => {
+                adminCal.render();
+                onDateChange(currentSelectedDate);
+                updateDashboard();
+            });
+
+            document.getElementById('add-custom-hour-btn').addEventListener('click', async () => {
                 const timeVal = document.getElementById('custom-hour-input').value;
                 if (!timeVal) return alert('Selecciona una hora en el reloj primero.');
                 
                 const formatted = formatTime12h(timeVal);
-                const baseHours = Storage.getCustomBaseHours();
+                const baseHours = [...Storage.getCustomBaseHours()];
                 if (!baseHours.includes(formatted)) {
                     baseHours.push(formatted);
-                    Storage.saveCustomBaseHours(baseHours);
+                    await Storage.saveCustomBaseHours(baseHours);
                 }
-                const active = Storage.getHours(currentSelectedDate);
+                const active = [...Storage.getHours(currentSelectedDate)];
                 if (!active.includes(formatted)) {
                     active.push(formatted);
-                    Storage.saveHours(currentSelectedDate, active);
+                    await Storage.saveHours(currentSelectedDate, active);
                 }
-                onDateChange(currentSelectedDate);
-                adminCal.render();
             });
 
-            document.getElementById('save-hours-btn').addEventListener('click', () => {
-                const checked = Array.from(document.querySelectorAll('#hours-grid input[type="checkbox"]:checked')).map(cb => cb.value);
-                Storage.saveHours(currentSelectedDate, checked);
-                adminCal.render();
-                
+            document.getElementById('save-hours-btn').addEventListener('click', async () => {
                 const btn = document.getElementById('save-hours-btn');
-                btn.textContent = '✓ Horarios guardados para ' + currentSelectedDate;
+                btn.textContent = 'Guardando en la nube...';
+                const checked = Array.from(document.querySelectorAll('#hours-grid input[type="checkbox"]:checked')).map(cb => cb.value);
+                await Storage.saveHours(currentSelectedDate, checked);
+                btn.textContent = '✓ Guardado para ' + currentSelectedDate;
                 setTimeout(() => btn.textContent = 'Guardar Disponibilidad del Día', 2000);
             });
 
@@ -238,21 +234,6 @@
                     currentFilter = e.currentTarget.getAttribute('data-filter');
                     renderAppointments();
                 });
-            });
-
-            document.getElementById('import-backup').addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    if (Storage.importBackup(event.target.result)) {
-                        alert('¡Historial y horarios restaurados con éxito!');
-                        window.location.reload();
-                    } else {
-                        alert('Archivo inválido.');
-                    }
-                };
-                reader.readAsText(file);
             });
         }
 
@@ -275,22 +256,23 @@
                                 ${hour}
                             </div>
                         </label>
-                        <button type="button" onclick="removeHourFromTemplate('${hour}')" title="Quitar de mi lista" class="absolute right-1.5 text-xs text-stone-400 hover:text-red-300 px-1">✕</button>
+                        <button type="button" data-remove-hour="${hour}" title="Quitar de mi lista" class="remove-hour-btn absolute right-1.5 text-xs text-stone-400 hover:text-red-300 px-1">✕</button>
                     </div>
                 `;
             }).join('');
 
+            grid.querySelectorAll('.remove-hour-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const hour = e.currentTarget.getAttribute('data-remove-hour');
+                    const base = Storage.getCustomBaseHours().filter(h => h !== hour);
+                    await Storage.saveCustomBaseHours(base);
+                    const active = Storage.getHours(currentSelectedDate).filter(h => h !== hour);
+                    await Storage.saveHours(currentSelectedDate, active);
+                });
+            });
+
             if (currentFilter === 'day') renderAppointments();
         }
-
-        window.removeHourFromTemplate = (hour) => {
-            const base = Storage.getCustomBaseHours().filter(h => h !== hour);
-            Storage.saveCustomBaseHours(base);
-            const active = Storage.getHours(currentSelectedDate).filter(h => h !== hour);
-            Storage.saveHours(currentSelectedDate, active);
-            onDateChange(currentSelectedDate);
-            adminCal.render();
-        };
 
         function updateDashboard() {
             const stats = Storage.getStats();
@@ -312,7 +294,7 @@
                 list.innerHTML = `
                     <div class="text-center py-10 border border-dashed border-stone-300 rounded-lg bg-[#E6DFD5]/50">
                         <p class="text-sm font-medium text-stone-700">Sin citas en esta vista</p>
-                        <p class="text-xs text-stone-500 mt-1">Aquí quedará guardado todo el historial de tus clientas.</p>
+                        <p class="text-xs text-stone-500 mt-1">Aquí aparecerán en vivo las citas de tus clientas.</p>
                     </div>
                 `;
                 return;
@@ -325,14 +307,8 @@
                     ? '<span class="text-xs bg-stone-300 text-stone-700 px-2 py-0.5 rounded font-medium">Cancelada</span>'
                     : '<span class="text-xs bg-amber-800/10 text-amber-900 border border-amber-800/20 px-2 py-0.5 rounded font-medium">Pendiente</span>';
 
-                const rescheduledNote = c.reagendada 
-                    ? `<p class="text-[11px] text-[#8C3B32] mt-1">↻ Reagendada (Antes: ${c.fechaAnterior} a las ${c.horaAnterior})</p>` 
-                    : '';
-
-                const clientNote = c.nota
-                    ? `<p class="text-xs text-stone-600 italic mt-1">Nota: "${c.nota}"</p>`
-                    : '';
-
+                const rescheduledNote = c.reagendada ? `<p class="text-[11px] text-[#8C3B32] mt-1">↻ Reagendada (Antes: ${c.fechaAnterior} a las ${c.horaAnterior})</p>` : '';
+                const clientNote = c.nota ? `<p class="text-xs text-stone-600 italic mt-1">Nota: "${c.nota}"</p>` : '';
                 const cleanPhone = c.telefono.replace(/[^0-9]/g, '');
                 const msg = encodeURIComponent(`Hola ${c.cliente}, te escribo para confirmar tu cita de ${c.servicio} el día ${c.fecha} a las ${c.hora}.`);
 
@@ -358,69 +334,73 @@
                                 WhatsApp
                             </a>
                             <div class="flex flex-wrap items-center gap-1.5">
-                                <button onclick="openRescheduleModal(${c.id}, '${c.cliente}', '${c.fecha}', '${c.hora}')" class="text-xs bg-[#F4F0EA] border border-stone-300 hover:border-[#8C3B32] text-stone-800 px-2.5 py-1.5 rounded-md font-medium">
+                                <button data-reschedule="${c.id}" class="btn-reschedule text-xs bg-[#F4F0EA] border border-stone-300 hover:border-[#8C3B32] text-stone-800 px-2.5 py-1.5 rounded-md font-medium">
                                     ↻ Reagendar
                                 </button>
                                 ${c.estado !== 'completada' ? `
-                                    <button onclick="cambiarEstado(${c.id}, 'completada')" class="text-xs bg-emerald-800 hover:bg-emerald-900 text-white px-2.5 py-1.5 rounded-md font-medium">
+                                    <button data-status="completada" data-id="${c.id}" class="btn-status text-xs bg-emerald-800 hover:bg-emerald-900 text-white px-2.5 py-1.5 rounded-md font-medium">
                                         Completar
                                     </button>
                                 ` : ''}
                                 ${c.estado === 'pendiente' ? `
-                                    <button onclick="cambiarEstado(${c.id}, 'cancelada')" class="text-xs text-stone-600 hover:text-red-700 px-2 py-1.5">
+                                    <button data-status="cancelada" data-id="${c.id}" class="btn-status text-xs text-stone-600 hover:text-red-700 px-2 py-1.5">
                                         Cancelar
                                     </button>
                                 ` : ''}
-                                <button onclick="borrarCita(${c.id})" class="text-xs text-stone-500 hover:text-red-700 px-1.5 py-1.5" title="Borrar">✕</button>
+                                <button data-delete="${c.id}" class="btn-delete text-xs text-stone-500 hover:text-red-700 px-1.5 py-1.5" title="Borrar">✕</button>
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
+
+            list.querySelectorAll('.btn-reschedule').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.getAttribute('data-reschedule');
+                    const cita = Storage.getAppointments().find(item => item.id === id);
+                    if (!cita) return;
+                    document.getElementById('reschedule-id').value = id;
+                    document.getElementById('reschedule-date').value = cita.fecha;
+                    document.getElementById('reschedule-client-info').textContent = `Clienta: ${cita.cliente} | Turno actual: ${cita.fecha} (${cita.hora})`;
+                    const modal = document.getElementById('reschedule-modal');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                });
+            });
+
+            list.querySelectorAll('.btn-status').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    await Storage.updateAppointmentStatus(e.currentTarget.getAttribute('data-id'), e.currentTarget.getAttribute('data-status'));
+                });
+            });
+
+            list.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    if (confirm('¿Eliminar definitivamente del historial?')) {
+                        await Storage.deleteAppointment(e.currentTarget.getAttribute('data-delete'));
+                    }
+                });
+            });
         }
 
-        window.openRescheduleModal = (id, cliente, fechaActual, horaActual) => {
-            document.getElementById('reschedule-id').value = id;
-            document.getElementById('reschedule-date').value = fechaActual;
-            document.getElementById('reschedule-client-info').textContent = `Clienta: ${cliente} | Turno actual: ${fechaActual} (${horaActual})`;
-            
-            const modal = document.getElementById('reschedule-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        };
-
-        window.closeRescheduleModal = () => {
+        const closeModal = () => {
             const modal = document.getElementById('reschedule-modal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
         };
+        document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+        document.getElementById('cancel-modal-btn').addEventListener('click', closeModal);
 
-        document.getElementById('reschedule-form').addEventListener('submit', (e) => {
+        document.getElementById('reschedule-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const id = Number(document.getElementById('reschedule-id').value);
+            const id = document.getElementById('reschedule-id').value;
             const nuevaFecha = document.getElementById('reschedule-date').value;
             const nuevaHora = formatTime12h(document.getElementById('reschedule-time').value);
             const liberarAnterior = document.getElementById('free-old-slot').checked;
 
-            if (Storage.rescheduleAppointment(id, nuevaFecha, nuevaHora, liberarAnterior)) {
-                closeRescheduleModal();
-                adminCal.render();
-                onDateChange(currentSelectedDate);
-                updateDashboard();
-            }
+            await Storage.rescheduleAppointment(id, nuevaFecha, nuevaHora, liberarAnterior);
+            closeModal();
         });
-
-        window.cambiarEstado = (id, estado) => {
-            Storage.updateAppointmentStatus(id, estado);
-            updateDashboard();
-        };
-
-        window.borrarCita = (id) => {
-            if (confirm('¿Eliminar definitivamente del historial?')) {
-                Storage.deleteAppointment(id);
-                updateDashboard();
-            }
-        };
 
         checkAccess();
     </script>
