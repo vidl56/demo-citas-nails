@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservar Cita - Estudio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-[#EBE5DE] text-stone-900 antialiased min-h-screen pb-12">
+
+    <header class="bg-[#E3DCD3] border-b border-stone-300 py-5 mb-8">
+        <div class="max-w-xl mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-[#8C3B32] text-[#F4F0EA] rounded-lg flex items-center justify-center font-semibold text-sm">
+                    ES
+                </div>
+                <div>
+                    <h1 class="text-lg font-semibold text-stone-900 leading-none">Estudio de Belleza</h1>
+                    <p class="text-xs text-stone-600 mt-1">Uñas • Pies • Extensiones</p>
+                </div>
+            </div>
+            <a href="admin.html" class="text-xs text-stone-600 hover:text-stone-900 border border-stone-300 bg-[#F4F0EA] px-3 py-1.5 rounded-md font-medium">Dueña</a>
+        </div>
+    </header>
+
+    <main class="max-w-xl mx-auto px-4">
+        <form id="booking-form" class="bg-[#F4F0EA] border border-stone-300 rounded-xl p-6 sm:p-8 shadow-sm space-y-6">
+            
+            <!-- 1. Selección de Servicio (Sin precios, permite elegir uno o varios) -->
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <h2 class="text-sm font-semibold text-stone-900">1. ¿Qué te gustaría realizarte?</h2>
+                    <span class="text-[11px] text-stone-500">Puedes marcar varios</span>
+                </div>
+                <p class="text-xs text-stone-600 mb-3">Selecciona las áreas para tu cita:</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="services-container">
+                    <!-- Uñas -->
+                    <label class="cursor-pointer">
+                        <input type="checkbox" name="service" value="Uñas (Manos)" class="peer sr-only" checked>
+                        <div class="p-4 bg-[#E6DFD5] border border-stone-300 rounded-lg peer-checked:border-[#8C3B32] peer-checked:bg-[#8C3B32] peer-checked:text-[#F4F0EA] transition-all text-center">
+                            <span class="block text-sm font-semibold">Uñas</span>
+                            <span class="block text-[11px] opacity-80 mt-0.5">Cuidado de manos</span>
+                        </div>
+                    </label>
+                    <!-- Pies -->
+                    <label class="cursor-pointer">
+                        <input type="checkbox" name="service" value="Pies (Pedicura)" class="peer sr-only">
+                        <div class="p-4 bg-[#E6DFD5] border border-stone-300 rounded-lg peer-checked:border-[#8C3B32] peer-checked:bg-[#8C3B32] peer-checked:text-[#F4F0EA] transition-all text-center">
+                            <span class="block text-sm font-semibold">Pies</span>
+                            <span class="block text-[11px] opacity-80 mt-0.5">Pedicura y spa</span>
+                        </div>
+                    </label>
+                    <!-- Extensiones -->
+                    <label class="cursor-pointer">
+                        <input type="checkbox" name="service" value="Extensiones" class="peer sr-only">
+                        <div class="p-4 bg-[#E6DFD5] border border-stone-300 rounded-lg peer-checked:border-[#8C3B32] peer-checked:bg-[#8C3B32] peer-checked:text-[#F4F0EA] transition-all text-center">
+                            <span class="block text-sm font-semibold">Extensiones</span>
+                            <span class="block text-[11px] opacity-80 mt-0.5">Aplicación / Retoque</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 2. Calendario Propio -->
+            <div>
+                <h2 class="text-sm font-semibold text-stone-900 mb-1">2. Selecciona el día</h2>
+                <p class="text-xs text-stone-600 mb-3">Los días con un punto tienen horarios disponibles.</p>
+                <div id="client-calendar"></div>
+            </div>
+
+            <!-- 3. Horas disponibles -->
+            <div>
+                <h2 class="text-sm font-semibold text-stone-900 mb-3">3. Horarios disponibles</h2>
+                <div id="client-hours" class="grid grid-cols-3 gap-2"></div>
+            </div>
+
+            <!-- 4. Datos de la clienta -->
+            <div class="space-y-3">
+                <h2 class="text-sm font-semibold text-stone-900">4. Tus datos de contacto</h2>
+                <input type="text" id="client-name" placeholder="Nombre y Apellido" required class="w-full px-3.5 py-2.5 bg-[#E6DFD5] border border-stone-300 rounded-lg text-sm placeholder-stone-500 focus:outline-none focus:border-[#8C3B32]">
+                <input type="tel" id="client-phone" placeholder="WhatsApp (Ej. +58 412 1234567)" required class="w-full px-3.5 py-2.5 bg-[#E6DFD5] border border-stone-300 rounded-lg text-sm placeholder-stone-500 focus:outline-none focus:border-[#8C3B32]">
+                <input type="text" id="client-notes" placeholder="Nota opcional (Ej. Quiero retiro de sistema anterior)" class="w-full px-3.5 py-2.5 bg-[#E6DFD5] border border-stone-300 rounded-lg text-sm placeholder-stone-500 focus:outline-none focus:border-[#8C3B32]">
+            </div>
+
+            <button type="submit" class="w-full bg-[#8C3B32] hover:bg-[#722F28] text-[#F4F0EA] font-medium py-3.5 rounded-lg transition-colors text-sm shadow-sm">
+                Agendar Cita
+            </button>
+        </form>
+    </main>
+
+    <script src="js/calendar.js"></script>
+    <script>
+        let selectedDate = '';
+
+        function loadAvailableHours(dateStr) {
+            selectedDate = dateStr;
+            const hours = Storage.getHours(dateStr);
+            const container = document.getElementById('client-hours');
+            
+            if (hours.length === 0) {
+                container.innerHTML = `<p class="col-span-3 text-xs text-stone-600 py-3 px-4 bg-[#E6DFD5] rounded-lg border border-stone-300">No hay turnos libres para esta fecha. Elige un día marcado con un punto en el calendario.</p>`;
+                return;
+            }
+
+            container.innerHTML = hours.map(h => `
+                <label class="cursor-pointer">
+                    <input type="radio" name="time" value="${h}" class="peer sr-only" required>
+                    <div class="text-center py-2.5 bg-[#E6DFD5] border border-stone-300 rounded-md text-xs font-medium peer-checked:bg-[#8C3B32] peer-checked:text-[#F4F0EA] peer-checked:border-[#8C3B32] transition-colors">
+                        ${h}
+                    </div>
+                </label>
+            `).join('');
+        }
+
+        const clientCal = new CustomCalendar('client-calendar', loadAvailableHours);
+        loadAvailableHours(clientCal.selectedDate);
+
+        document.getElementById('booking-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const timeInput = document.querySelector('input[name="time"]:checked');
+            const selectedServices = Array.from(document.querySelectorAll('input[name="service"]:checked')).map(cb => cb.value);
+            
+            if (selectedServices.length === 0) {
+                alert('Por favor selecciona al menos un servicio (Uñas, Pies o Extensiones).');
+                return;
+            }
+            if (!timeInput) {
+                alert('Por favor selecciona una hora disponible.');
+                return;
+            }
+
+            Storage.saveAppointment({
+                servicio: selectedServices.join(' + '),
+                nota: document.getElementById('client-notes').value.trim(),
+                fecha: selectedDate,
+                hora: timeInput.value,
+                cliente: document.getElementById('client-name').value.trim(),
+                telefono: document.getElementById('client-phone').value.trim()
+            });
+
+            alert('¡Tu cita ha sido agendada! Te contactaremos por WhatsApp.');
+            e.target.reset();
+            // Volver a marcar Uñas por defecto
+            document.querySelector('input[name="service"]').checked = true;
+            clientCal.render();
+            loadAvailableHours(selectedDate);
+        });
+    </script>
+</body>
+</html>
