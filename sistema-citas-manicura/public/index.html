@@ -10,16 +10,19 @@
 </head>
 <body class="bg-[#EBE5DE] text-stone-900 antialiased min-h-screen pb-12">
 
+    <!-- Cabecera limpia para clientas (Sin botón de Dueña visible) -->
     <header class="bg-[#E3DCD3] border-b border-stone-300 py-5 mb-8">
         <div class="max-w-xl mx-auto px-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-[#8C3B32] text-[#F4F0EA] rounded-lg flex items-center justify-center font-semibold text-sm">ES</div>
+                <!-- Acceso secreto: Tocar 5 veces el logo lleva a admin.html -->
+                <div id="secret-admin-trigger" class="w-9 h-9 bg-[#8C3B32] text-[#F4F0EA] rounded-lg flex items-center justify-center font-semibold text-sm select-none cursor-pointer">
+                    ES
+                </div>
                 <div>
                     <h1 class="text-lg font-semibold text-stone-900 leading-none">Estudio de Belleza</h1>
                     <p class="text-xs text-stone-600 mt-1">Uñas • Pies • Extensiones</p>
                 </div>
             </div>
-            <a href="admin.html" class="text-xs text-stone-600 hover:text-stone-900 border border-stone-300 bg-[#F4F0EA] px-3 py-1.5 rounded-md font-medium">Dueña</a>
         </div>
     </header>
 
@@ -84,6 +87,18 @@
     <script type="module">
         import { Storage, CustomCalendar, onDataReady } from './js/calendar.js';
 
+        // Lógica de acceso secreto para la dueña (5 toques rápidos en el logo "ES")
+        let tapCount = 0;
+        let tapTimer = null;
+        document.getElementById('secret-admin-trigger').addEventListener('click', () => {
+            tapCount++;
+            clearTimeout(tapTimer);
+            if (tapCount >= 5) {
+                window.location.href = 'admin.html';
+            }
+            tapTimer = setTimeout(() => { tapCount = 0; }, 1500);
+        });
+
         let selectedDate = '';
 
         function loadAvailableHours(dateStr) {
@@ -143,7 +158,7 @@
                 if (err.message === "HORA_OCUPADA") {
                     alert('Lo sentimos, otra clienta acaba de reservar esta hora hace unos segundos. Por favor elige otro horario.');
                 } else {
-                    alert('Error al conectar con la base de datos. Revisa que Firestore esté en Modo de Prueba.');
+                    alert('Error al conectar con la base de datos. Revisa tu conexión e intenta de nuevo.');
                 }
             } finally {
                 btn.disabled = false;
