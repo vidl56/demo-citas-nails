@@ -309,7 +309,13 @@
 
                 const rescheduledNote = c.reagendada ? `<p class="text-[11px] text-[#8C3B32] mt-1">↻ Reagendada (Antes: ${c.fechaAnterior} a las ${c.horaAnterior})</p>` : '';
                 const clientNote = c.nota ? `<p class="text-xs text-stone-600 italic mt-1">Nota: "${c.nota}"</p>` : '';
-                const cleanPhone = c.telefono.replace(/[^0-9]/g, '');
+
+                // Estandarizar número para el enlace wa.me/ (siempre 58 + 10 dígitos)
+                let cleanPhone = c.telefono.replace(/[^0-9]/g, '');
+                if (cleanPhone.startsWith('580')) cleanPhone = '58' + cleanPhone.substring(3);
+                else if (cleanPhone.startsWith('0')) cleanPhone = '58' + cleanPhone.substring(1);
+                else if (!cleanPhone.startsWith('58') && cleanPhone.length === 10) cleanPhone = '58' + cleanPhone;
+
                 const msg = encodeURIComponent(`Hola ${c.cliente}, te escribo para confirmar tu cita de ${c.servicio} el día ${c.fecha} a las ${c.hora}.`);
 
                 return `
