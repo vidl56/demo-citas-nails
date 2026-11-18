@@ -8,25 +8,32 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="bg-[#EBE5DE] text-stone-900 antialiased min-h-screen">
+<body class="bg-[#EBE5DE] text-stone-900 antialiased min-h-screen flex flex-col justify-between">
 
     <!-- PANTALLA DE PIN (1234) -->
-    <div id="login-overlay" class="fixed inset-0 bg-[#E3DCD3] z-50 flex items-center justify-center p-4">
+    <div id="login-overlay" class="fixed inset-0 bg-[#E3DCD3] z-50 flex flex-col items-center justify-center p-4">
         <div class="bg-[#F4F0EA] border border-stone-300 rounded-xl p-8 max-w-sm w-full shadow-sm text-center">
-            <div class="w-12 h-12 bg-[#8C3B32] text-[#F4F0EA] rounded-lg flex items-center justify-center mx-auto mb-4 font-semibold text-lg">ES</div>
+            <!-- Logo en el login -->
+            <div class="w-16 h-16 rounded-xl overflow-hidden bg-[#8C3B32] text-[#F4F0EA] flex items-center justify-center mx-auto mb-4 font-semibold text-lg border border-stone-300 shadow-sm">
+                <img src="logo.png" alt="Logo Estudio" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <span style="display:none;" class="w-full h-full items-center justify-center">ES</span>
+            </div>
             <h1 class="text-lg font-semibold text-stone-900 mb-1">Panel de Dueña</h1>
-            <p class="text-xs text-stone-600 mb-6">Ingresa tu PIN de seguridad (Prueba: 1234)</p>
+            <p class="text-xs text-stone-600 mb-6">Ingresa tu PIN de seguridad</p>
             
             <form id="login-form" class="space-y-4">
                 <input type="password" id="pin-input" placeholder="••••" maxlength="8" required 
                     class="w-full text-center tracking-widest text-lg px-4 py-3 bg-[#E6DFD5] border border-stone-300 rounded-lg focus:outline-none focus:border-[#8C3B32]">
-                <p id="login-error" class="text-xs text-red-700 hidden">PIN incorrecto. Usa 1234.</p>
+                <p id="login-error" class="text-xs text-red-700 hidden">PIN incorrecto.</p>
                 <button type="submit" class="w-full bg-[#8C3B32] hover:bg-[#722F28] text-[#F4F0EA] font-medium py-3 rounded-lg transition-colors text-sm">
                     Desbloquear Agenda
                 </button>
             </form>
             <a href="index.html" class="block mt-6 text-xs text-stone-600 hover:text-stone-900 underline">&larr; Ir a vista de clientas</a>
         </div>
+        <p class="text-xs text-stone-600 mt-6">
+            Desarrollado por <span class="font-semibold text-stone-900">Tecnologías R&amp;M</span>
+        </p>
     </div>
 
     <!-- MODAL PARA REAGENDAR CITA -->
@@ -61,11 +68,14 @@
     </div>
 
     <!-- CONTENIDO PRINCIPAL -->
-    <div id="admin-content" class="hidden pb-12">
+    <div id="admin-content" class="hidden">
         <nav class="bg-[#E3DCD3] border-b border-stone-300">
             <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
-                <div class="flex items-center gap-2.5">
-                    <span class="w-3 h-3 rounded-full bg-[#8C3B32]"></span>
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg overflow-hidden bg-[#8C3B32] text-[#F4F0EA] flex items-center justify-center font-semibold text-xs border border-stone-300 shrink-0">
+                        <img src="logo.png" alt="Logo" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <span style="display:none;" class="w-full h-full items-center justify-center">ES</span>
+                    </div>
                     <span class="font-semibold text-stone-900">Control de Agenda • En la Nube</span>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -151,6 +161,13 @@
             </div>
         </main>
     </div>
+
+    <!-- Pie de página de autoría -->
+    <footer class="py-6 text-center border-t border-stone-300/60 bg-[#E3DCD3]/50 mt-8">
+        <p class="text-xs text-stone-600">
+            Desarrollado por <span class="font-semibold text-stone-900">Tecnologías R&amp;M</span>
+        </p>
+    </footer>
 
     <script type="module">
         import { Storage, CustomCalendar, formatTime12h, onDataReady } from './js/calendar.js';
