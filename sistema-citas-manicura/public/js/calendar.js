@@ -1,14 +1,14 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Configuración de Firebase: reemplaza con las credenciales de tu proyecto (citas-nails-prod)
+// Configuración real de tu proyecto citas-nails-prod
 const firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "TU_PROYECTO.firebaseapp.com",
-    projectId: "TU_PROYECTO",
-    storageBucket: "TU_PROYECTO.firebasestorage.app",
-    messagingSenderId: "TU_SENDER_ID",
-    appId: "TU_APP_ID"
+    apiKey: "AIzaSyBfhdrYi7Kvc6u--PP1-A4VGK8zmD4E_YU",
+    authDomain: "citas-nails-prod.firebaseapp.com",
+    projectId: "citas-nails-prod",
+    storageBucket: "citas-nails-prod.firebasestorage.app",
+    messagingSenderId: "705585538747",
+    appId: "1:705585538747:web:78da577bf4e95f5217ab9e"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -333,7 +333,6 @@ export class CustomCalendar {
             const hasHours = Storage.getHours(dateStr).length > 0;
             const bookedCount = countByDate[dateStr] || 0;
 
-            // En modo admin se permite seleccionar días pasados para consultar historial
             const disabledPast = isPast && !this.showAppointmentCount;
 
             let btnClass = "h-11 w-full rounded-md flex flex-col items-center justify-center transition-colors relative ";
